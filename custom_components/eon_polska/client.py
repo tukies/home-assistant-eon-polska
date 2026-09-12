@@ -147,3 +147,34 @@ class EonClient:
         if any(not start <= r.start.astimezone(WARSAW).date() <= end for r in readings):
             raise ReportError("Report includes unexpected dates")
         return readings
+
+    async def monthly(self, point, year):
+        text = await self.request(
+            "/mojeon/api/oze/GetOzeAgrData",
+            {
+                "ku": point["ku"],
+                "ppe": point["ppe"],
+                "yearFrom": max(2022, year - 1),
+                "yearTo": year,
+            },
+        )
+        try:
+            return json.loads(text)
+        except ValueError as err:
+            raise ApiError("Invalid monthly response") from err
+
+    async def billing(self, point, year):
+        text = await self.request(
+            "/mojeon/api/oze/GetBillingData",
+            {
+                "ku": point["ku"],
+                "ppe": point["ppe"],
+                "yearFrom": 2022,
+                "yearTo": year,
+                "cycle": 6,
+            },
+        )
+        try:
+            return json.loads(text)
+        except ValueError as err:
+            raise ApiError("Invalid billing response") from err

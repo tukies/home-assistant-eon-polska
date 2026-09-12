@@ -67,5 +67,87 @@
       "already_configured": "One or more supply points are already configured.",
       "reauth_successful": "Session renewed."
     }
+  },
+  "entity": {
+    "sensor": {
+      "import": {
+        "name": "Latest hourly grid import"
+      },
+      "export": {
+        "name": "Latest hourly grid export"
+      },
+      "reported_at": {
+        "name": "Latest interval start"
+      },
+      "excluded_values": {
+        "name": "Excluded energy values"
+      },
+      "daily_import": {
+        "name": "Last complete day grid import"
+      },
+      "daily_export": {
+        "name": "Last complete day grid export"
+      },
+      "daily_date": {
+        "name": "Last complete day"
+      },
+      "refreshed_at": {
+        "name": "Last successful update"
+      },
+      "missing_hours": {
+        "name": "Hours with missing values"
+      },
+      "forecast_hours": {
+        "name": "Hours with forecasts"
+      },
+      "uncertain_hours": {
+        "name": "Hours with uncertain values"
+      },
+      "unknown_hours": {
+        "name": "Hours with unknown quality"
+      },
+      "coverage": {
+        "name": "Usable hourly coverage"
+      },
+      "month_import": {
+        "name": "Reported month balanced import"
+      },
+      "month_export": {
+        "name": "Reported month balanced export"
+      },
+      "year_import": {
+        "name": "Reported calendar-year balanced import"
+      },
+      "year_export": {
+        "name": "Reported calendar-year balanced export"
+      },
+      "billing_import": {
+        "name": "Last settlement import"
+      },
+      "billing_export": {
+        "name": "Last settlement export"
+      },
+      "oze_recovered": {
+        "name": "OZE recovered energy"
+      },
+      "oze_previous_surplus": {
+        "name": "OZE previous-period surplus"
+      },
+      "oze_settled_surplus": {
+        "name": "OZE current-period settled surplus"
+      },
+      "oze_stored_surplus": {
+        "name": "OZE stored settlement surplus"
+      },
+      "oze_expired_surplus": {
+        "name": "OZE expired settlement surplus"
+      },
+      "oze_factor": {
+        "name": "OZE factor"
+      },
+      "billing_period_end": {
+        "name": "Last billing period end"
+      }
+    }
   }
 }

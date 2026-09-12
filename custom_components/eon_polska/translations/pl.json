@@ -67,5 +67,87 @@
       "already_configured": "Co najmniej jeden z wybranych punktów jest już skonfigurowany.",
       "reauth_successful": "Sesja została odnowiona."
     }
+  },
+  "entity": {
+    "sensor": {
+      "import": {
+        "name": "Ostatni godzinowy pobór z sieci"
+      },
+      "export": {
+        "name": "Ostatnie godzinowe oddawanie do sieci"
+      },
+      "reported_at": {
+        "name": "Początek ostatniego przedziału danych"
+      },
+      "excluded_values": {
+        "name": "Pominięte wartości energii"
+      },
+      "daily_import": {
+        "name": "Pobór w ostatnim kompletnym dniu"
+      },
+      "daily_export": {
+        "name": "Oddawanie w ostatnim kompletnym dniu"
+      },
+      "daily_date": {
+        "name": "Ostatni kompletny dzień"
+      },
+      "refreshed_at": {
+        "name": "Ostatnia udana aktualizacja"
+      },
+      "missing_hours": {
+        "name": "Godziny z brakującymi wartościami"
+      },
+      "forecast_hours": {
+        "name": "Godziny z danymi prognozowanymi"
+      },
+      "uncertain_hours": {
+        "name": "Godziny z danymi niepewnymi"
+      },
+      "unknown_hours": {
+        "name": "Godziny z nieznanym statusem"
+      },
+      "coverage": {
+        "name": "Udział kompletnych godzin"
+      },
+      "month_import": {
+        "name": "Bilansowany pobór w miesiącu raportu"
+      },
+      "month_export": {
+        "name": "Bilansowane oddawanie w miesiącu raportu"
+      },
+      "year_import": {
+        "name": "Bilansowany pobór w roku raportu"
+      },
+      "year_export": {
+        "name": "Bilansowane oddawanie w roku raportu"
+      },
+      "billing_import": {
+        "name": "Pobór w ostatnim rozliczeniu"
+      },
+      "billing_export": {
+        "name": "Oddawanie w ostatnim rozliczeniu"
+      },
+      "oze_recovered": {
+        "name": "Energia odzyskana OZE"
+      },
+      "oze_previous_surplus": {
+        "name": "Nadwyżka OZE z poprzednich okresów"
+      },
+      "oze_settled_surplus": {
+        "name": "Nadwyżka OZE rozliczona w bieżącym okresie"
+      },
+      "oze_stored_surplus": {
+        "name": "Zmagazynowana nadwyżka OZE po rozliczeniu"
+      },
+      "oze_expired_surplus": {
+        "name": "Przeterminowana nadwyżka OZE"
+      },
+      "oze_factor": {
+        "name": "Współczynnik OZE"
+      },
+      "billing_period_end": {
+        "name": "Koniec ostatniego okresu rozliczeniowego"
+      }
+    }
   }
 }

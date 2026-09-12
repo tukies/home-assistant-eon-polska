@@ -1,5 +1,15 @@
 # Walidacja — 12 września 2026
 
+## Rozszerzenie danych — wersja 0.3.0
+
+- Potwierdzono działanie `GetOzeAgrData` oraz `GetBillingData` przez bezpośrednie żądania z bieżącej, uwierzytelnionej sesji.
+- Tymczasowa lokalna instancja Home Assistant 2026.9.2 załadowała **26 czujników**, pobrała dane godzinowe, miesięczne i rozliczeniowe oraz poprawnie wyładowała integrację.
+- Liczba historycznych serii energii pozostała równa **2**. Żaden czujnik podsumowania nie otrzymał klasy stanu tworzącej kolejne statystyki energii.
+- Testy potwierdzają kompletność dni 23/24/25-godzinnych, odrzucanie niepełnych dni, rozdzielenie prognoz i braków, zachowanie wartości zero oraz daty rozliczeń niezależne od kolejności odpowiedzi API.
+- Test awarii opcjonalnego źródła potwierdza dalszy zapis godzinowej energii. Test wygaśnięcia sesji potwierdza konieczność ponownego uwierzytelnienia.
+- Data ostatnich danych nie pochodzi z syntetycznych pustych przedziałów, którymi uzupełniono braki w historii.
+- Nie dodano terminu wygaśnięcia nadwyżki, płatności, terminów zapłaty ani obsługi zwykłych umów bez OZE.
+
 ## Co sprawdzono
 
 - Testy Python obejmują parser, klienta HTTP, kody sesji, konfigurację, zgodność konta przy ponownym logowaniu oraz prawdziwy Recorder z tymczasową bazą SQLite.

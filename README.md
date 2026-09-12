@@ -6,6 +6,27 @@ Nieoficjalna integracja dla **prosumentów E.ON Polska (OZE)**. Pobiera godzinow
 
 Logujesz się swoim adresem e-mail i hasłem **bezpośrednio na stronie E.ON**. Rozszerzenie Chrome kopiuje kod aktywnej sesji, który wklejasz do Home Assistant. Nie potrzebujesz Pythona, HTTP Toolkit ani narzędzi deweloperskich strony.
 
+## Nowe dane w wersji 0.3.0
+
+Dla każdego punktu PPE dostępnych jest **26 czujników**, w tym dotychczasowe czujniki godzinowe. Nazwy konfiguracji i czujników są dostępne po polsku i angielsku.
+
+| Grupa | Dostępne informacje |
+|---|---|
+| Ostatni kompletny dzień | Pobór, oddawanie i data dnia. Dzień jest kompletny tylko wtedy, gdy wszystkie godziny obu kierunków spełniają wybraną politykę jakości. Uwzględniane są dni mające 23 lub 25 godzin. |
+| Miesiąc i rok raportu | Bilansowany pobór i oddawanie według podsumowań E.ON. Atrybuty zawierają początek i koniec okresu; bieżący miesiąc lub rok mogą być niepełne. |
+| Jakość i aktualność | Czas ostatnich dostępnych danych, czas udanej aktualizacji, godziny z brakami, prognozami, danymi niepewnymi i nieznanym statusem oraz procent kompletnych godzin. |
+| Ostatnie rozliczenie OZE | Pobór, oddawanie, energia odzyskana, nadwyżka z poprzednich okresów, nadwyżka rozliczona, zmagazynowana i przeterminowana, współczynnik OZE oraz data końca okresu rozliczeniowego. |
+
+**Podsumowania nie zastępują dwóch serii historycznych w panelu Energia i nie dodają do nich energii.** Służą do kart informacyjnych i automatyzacji. Nie mają klasy stanu licznika narastającego.
+
+Podsumowanie dnia powstaje z godzinowego CSV. Miesiąc i rok pochodzą z oddzielnego, bilansowanego zestawienia E.ON, dlatego ich wartości mogą różnić się od sum surowego importu i eksportu. Podsumowania E.ON nie udostępniają statusu każdej wartości, więc opcja wykluczania prognoz ich nie filtruje — dotyczy danych godzinowych i wyliczanego z nich dnia.
+
+Każdy czujnik rozliczeniowy ma atrybuty z datami okresu. „Zmagazynowana nadwyżka OZE” oznacza stan rozliczenia energii, **nie poziom fizycznego akumulatora**. Nie prezentujemy terminu wygaśnięcia nadwyżki: API zwracało tę samą datę dla wielu okresów i jej znaczenie wymaga dalszej weryfikacji.
+
+Brak konkretnego pola oznacza stan nieznany, a nie zero. Niedostępność dodatkowego interfejsu miesięcznego lub rozliczeniowego oznacza niedostępność jego czujników; nie przerywa poprawnego pobierania godzinowej historii. Wygaśnięcie sesji nadal wymaga ponownego uwierzytelnienia.
+
+Liczniki jakości odnoszą się do skonfigurowanego zakresu historii. Jedna godzina może mieć różne statusy dla poboru i oddawania, więc kategorie mogą się nakładać. „Udział kompletnych godzin” uwzględnia wybraną opcję dopuszczania prognoz. „Ostatni kompletny dzień” może być starszy niż data ostatnich danych, jeśli nowsze dni mają braki lub wykluczone wartości.
+
 ## 1. Zainstaluj integrację przez HACS
 
 1. Otwórz **HACS** w Home Assistant.
@@ -68,13 +89,13 @@ Otwórz konfigurację panelu **Energia** i przypisz dwie historyczne serie dla w
 
 Identyfikatory statystyk mają postać `eon_polska:<PPE>_import` i `eon_polska:<PPE>_export`.
 
-**Nie wybieraj czujników „Latest hourly…” jako liczników energii.** Pokazują pojedynczy ostatni przedział. Historyczne serie są oddzielnie zapisywane w Recorderze z właściwymi datami.
+**Nie wybieraj czujników godzinowych ani podsumowań jako liczników energii.** Czujniki godzinowe pokazują pojedynczy ostatni przedział. Historyczne serie są oddzielnie zapisywane w Recorderze z właściwymi datami.
 
 Oddawanie do sieci nie oznacza całkowitej produkcji fotowoltaiki — energia zużyta bezpośrednio w domu nie jest eksportem.
 
-## Aktualizacja z wersji 0.1.0
+## Aktualizacja do wersji 0.3.0
 
-Zaktualizuj integrację w HACS do **0.2.0** i uruchom ponownie Home Assistant. Istniejące wpisy, wybrane punkty i ustawienia historii pozostają bez zmian. Gdy Home Assistant poprosi o ponowne uwierzytelnienie, możesz użyć rozszerzenia i wkleić nowy kod. Nie musisz usuwać integracji.
+Zaktualizuj integrację w HACS do **0.3.0** i uruchom ponownie Home Assistant. Istniejące wpisy, wybrane punkty i ustawienia historii pozostają bez zmian. Nowe czujniki zostaną dodane automatycznie. Rozszerzenie Chrome w wersji 0.2.0 nadal jest zgodne i nie wymaga aktualizacji. Gdy Home Assistant poprosi o ponowne uwierzytelnienie, możesz użyć rozszerzenia i wkleić nowy kod. Nie musisz usuwać integracji.
 
 Jeśli rozszerzenie było już załadowane lokalnie, zastąp jego pliki nową wersją i kliknij **Odśwież / Reload** przy rozszerzeniu na stronie `chrome://extensions`.
 
