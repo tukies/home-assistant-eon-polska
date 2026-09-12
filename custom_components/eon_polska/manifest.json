@@ -1,0 +1,16 @@
+{
+  "domain": "eon_polska",
+  "name": "E.ON Polska",
+  "version": "0.1.0",
+  "config_flow": true,
+  "documentation": "https://github.com/tukies/home-assistant-eon-polska",
+  "dependencies": [
+    "recorder"
+  ],
+  "codeowners": [
+    "@tukies"
+  ],
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "issue_tracker": "https://github.com/tukies/home-assistant-eon-polska/issues"
+}

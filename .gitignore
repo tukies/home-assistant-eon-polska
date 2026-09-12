@@ -1,0 +1,14 @@
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.pyc
+.env
+.env.*
+*.har
+*.csv
+*.db
+*.db-*
+*session*.json
+*auth*.json
+work/

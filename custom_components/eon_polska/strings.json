@@ -1,0 +1,42 @@
+{
+  "title": "E.ON Polska",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect an E.ON browser session",
+        "description": "Log in at eon.pl/mojeon, then copy the Cookie request header from a successful GetPHList request in browser developer tools. This session secret is stored locally in Home Assistant. Automatic password login is not supported.",
+        "data": {
+          "cookie": "Cookie request header",
+          "user_agent": "Browser User-Agent"
+        }
+      },
+      "select": {
+        "title": "Choose prosumer supply points",
+        "description": "History is downloaded daily from this fixed start date. Confirmed data only by default. Enable estimates to include uncertain and forecast values; missing values are excluded.",
+        "data": {
+          "ppes": "Supply points",
+          "start_date": "History start",
+          "include_estimates": "Include uncertain and forecast readings"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Renew the E.ON session",
+        "description": "Sign in again in your browser and paste a fresh Cookie header for the same account.",
+        "data": {
+          "cookie": "Cookie request header"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The browser session is invalid or expired.",
+      "cannot_connect": "Unable to contact E.ON.",
+      "wrong_account": "This session cannot access all configured supply points.",
+      "invalid_selection": "Choose accessible supply points and a start date from 2022 to two days ago."
+    },
+    "abort": {
+      "no_oze_accounts": "No active prosumer supply points were found. Standard electricity accounts are not supported by this report endpoint.",
+      "already_configured": "One or more supply points are already configured.",
+      "reauth_successful": "Session renewed."
+    }
+  }
+}
