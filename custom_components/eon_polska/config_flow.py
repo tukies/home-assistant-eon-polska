@@ -7,6 +7,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers import selector
 
+from .browser_session import InvalidSessionCode, decode_session
 from .client import DEFAULT_AGENT, ApiError, AuthError, EonClient
 from .const import DOMAIN
 from .parser import WARSAW
@@ -16,28 +17,60 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
+        return self.async_show_menu(step_id="user", menu_options=["browser", "cookie"])
+
+    async def async_step_browser(self, user_input=None):
         errors = {}
         if user_input is not None:
             try:
-                async with aiohttp.ClientSession(
-                    cookie_jar=aiohttp.DummyCookieJar()
-                ) as session:
-                    client = EonClient(
-                        session, user_input["cookie"], user_input["user_agent"]
-                    )
-                    points = await client.accounts()
-                    if not points:
-                        return self.async_abort(reason="no_oze_accounts")
-                    await client.renew()
-                    self._auth = {**user_input, "cookie": client.cookie}
-                    self._points = points
-                return await self.async_step_select()
+                auth = decode_session(user_input["session_code"])
+                result = await self._authenticate(auth)
+                if result is not None:
+                    return result
+            except InvalidSessionCode:
+                errors["base"] = "invalid_session_code"
             except AuthError:
                 errors["base"] = "invalid_auth"
             except ApiError:
                 errors["base"] = "cannot_connect"
         return self.async_show_form(
-            step_id="user",
+            step_id="browser",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("session_code"): selector.TextSelector(
+                        selector.TextSelectorConfig(
+                            type=selector.TextSelectorType.PASSWORD
+                        )
+                    )
+                }
+            ),
+            errors=errors,
+        )
+
+    async def _authenticate(self, auth):
+        async with aiohttp.ClientSession(
+            cookie_jar=aiohttp.DummyCookieJar()
+        ) as session:
+            client = EonClient(session, auth["cookie"], auth["user_agent"])
+            points = await client.accounts()
+            if not points:
+                return self.async_abort(reason="no_oze_accounts")
+            await client.renew()
+            self._auth = {"cookie": client.cookie, "user_agent": auth["user_agent"]}
+            self._points = points
+        return await self.async_step_select()
+
+    async def async_step_cookie(self, user_input=None):
+        errors = {}
+        if user_input is not None:
+            try:
+                return await self._authenticate(user_input)
+            except AuthError:
+                errors["base"] = "invalid_auth"
+            except ApiError:
+                errors["base"] = "cannot_connect"
+        return self.async_show_form(
+            step_id="cookie",
             data_schema=vol.Schema(
                 {
                     vol.Required("cookie"): selector.TextSelector(
@@ -106,29 +139,71 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_reauth(self, entry_data):
-        return await self.async_step_reauth_confirm()
+        return self.async_show_menu(
+            step_id="reauth", menu_options=["reauth_browser", "reauth_confirm"]
+        )
+
+    async def async_step_reauth_browser(self, user_input=None):
+        errors = {}
+        if user_input is not None:
+            try:
+                auth = decode_session(user_input["session_code"])
+                return await self._reauthenticate(auth)
+            except InvalidSessionCode:
+                errors["base"] = "invalid_session_code"
+            except AuthError as err:
+                errors["base"] = (
+                    "wrong_account" if str(err) == "wrong_account" else "invalid_auth"
+                )
+            except ApiError:
+                errors["base"] = "cannot_connect"
+        return self.async_show_form(
+            step_id="reauth_browser",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("session_code"): selector.TextSelector(
+                        selector.TextSelectorConfig(
+                            type=selector.TextSelectorType.PASSWORD
+                        )
+                    )
+                }
+            ),
+            errors=errors,
+        )
+
+    async def _reauthenticate(self, auth):
+        entry = self._get_reauth_entry()
+        async with aiohttp.ClientSession(
+            cookie_jar=aiohttp.DummyCookieJar()
+        ) as session:
+            client = EonClient(session, auth["cookie"], auth["user_agent"])
+            points = await client.accounts()
+            if not set(entry.data["ppes"]) <= {p["ppe"] for p in points}:
+                raise AuthError("wrong_account")
+            await client.renew()
+            return self.async_update_reload_and_abort(
+                entry,
+                data_updates={
+                    "cookie": client.cookie,
+                    "user_agent": auth["user_agent"],
+                },
+            )
 
     async def async_step_reauth_confirm(self, user_input=None):
         errors = {}
         entry = self._get_reauth_entry()
-        if user_input:
+        if user_input is not None:
             try:
-                async with aiohttp.ClientSession(
-                    cookie_jar=aiohttp.DummyCookieJar()
-                ) as session:
-                    client = EonClient(
-                        session, user_input["cookie"], entry.data["user_agent"]
-                    )
-                    points = await client.accounts()
-                    if not set(entry.data["ppes"]) <= {p["ppe"] for p in points}:
-                        errors["base"] = "wrong_account"
-                    else:
-                        await client.renew()
-                        return self.async_update_reload_and_abort(
-                            entry, data_updates={"cookie": client.cookie}
-                        )
-            except AuthError:
-                errors["base"] = "invalid_auth"
+                return await self._reauthenticate(
+                    {
+                        "cookie": user_input["cookie"],
+                        "user_agent": entry.data["user_agent"],
+                    }
+                )
+            except AuthError as err:
+                errors["base"] = (
+                    "wrong_account" if str(err) == "wrong_account" else "invalid_auth"
+                )
             except ApiError:
                 errors["base"] = "cannot_connect"
         return self.async_show_form(

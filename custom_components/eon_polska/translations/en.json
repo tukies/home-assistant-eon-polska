@@ -3,11 +3,10 @@
   "config": {
     "step": {
       "user": {
-        "title": "Connect an E.ON browser session",
-        "description": "Log in at eon.pl/mojeon, then copy the Cookie request header from a successful GetPHList request in browser developer tools. This session secret is stored locally in Home Assistant. Automatic password login is not supported.",
-        "data": {
-          "cookie": "Cookie request header",
-          "user_agent": "Browser User-Agent"
+        "title": "Sign in to E.ON Polska",
+        "menu_options": {
+          "browser": "Browser sign-in (recommended)",
+          "cookie": "Advanced: Cookie header"
         }
       },
       "select": {
@@ -25,13 +24,43 @@
         "data": {
           "cookie": "Cookie request header"
         }
+      },
+      "cookie": {
+        "title": "Advanced: paste a Cookie header",
+        "description": "Log in at eon.pl/mojeon, then copy the Cookie request header from a successful GetPHList request in browser developer tools. This session secret is stored locally in Home Assistant. Automatic password login is not supported.",
+        "data": {
+          "cookie": "Cookie request header",
+          "user_agent": "Browser User-Agent"
+        }
+      },
+      "browser": {
+        "title": "Browser sign-in",
+        "description": "Install the [Chrome sign-in extension](https://github.com/tukies/home-assistant-eon-polska#browser-sign-in-recommended), open your normal E.ON tab and sign in with your email and password. Click Copy session code in the extension, then paste it below. The code is a secret; no developer tools are needed.",
+        "data": {
+          "session_code": "Session code"
+        }
+      },
+      "reauth": {
+        "title": "Renew E.ON sign-in",
+        "menu_options": {
+          "reauth_browser": "Browser sign-in (recommended)",
+          "reauth_confirm": "Advanced: Cookie header"
+        }
+      },
+      "reauth_browser": {
+        "title": "Renew browser sign-in",
+        "description": "Install the [Chrome sign-in extension](https://github.com/tukies/home-assistant-eon-polska#browser-sign-in-recommended), open your normal E.ON tab and sign in with your email and password. Click Copy session code in the extension, then paste it below. The code is a secret; no developer tools are needed.",
+        "data": {
+          "session_code": "Session code"
+        }
       }
     },
     "error": {
       "invalid_auth": "The browser session is invalid or expired.",
       "cannot_connect": "Unable to contact E.ON.",
       "wrong_account": "This session cannot access all configured supply points.",
-      "invalid_selection": "Choose accessible supply points and a start date from 2022 to two days ago."
+      "invalid_selection": "Choose accessible supply points and a start date from 2022 to two days ago.",
+      "invalid_session_code": "This is not a valid session code. Open the sign-in extension on your E.ON tab, click Copy session code, and paste it here."
     },
     "abort": {
       "no_oze_accounts": "No active prosumer supply points were found. Standard electricity accounts are not supported by this report endpoint.",

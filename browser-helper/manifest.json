@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "E.ON Polska — logowanie do Home Assistant",
+  "version": "0.2.0",
+  "description": "Skopiuj kod sesji E.ON do Home Assistant po zwykłym zalogowaniu na eon.pl.",
+  "permissions": [
+    "cookies",
+    "scripting",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://eon.pl/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "E.ON — logowanie do Home Assistant"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'"
+  }
+}

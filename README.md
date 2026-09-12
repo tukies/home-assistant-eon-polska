@@ -1,85 +1,153 @@
-# E.ON Polska for Home Assistant
+# E.ON Polska — integracja z Home Assistant
 
-Custom integration, version 0.1.0. Reads hourly grid import/export for E.ON Polska **prosumer (OZE)** supply points. Uses the private Mój E.ON website API.
+Nieoficjalna integracja dla **prosumentów E.ON Polska (OZE)**. Pobiera godzinowe dane energii pobranej z sieci i oddanej do sieci oraz udostępnia je w panelu **Energia** w Home Assistant.
 
-## What it does
+**Wymagania:** Home Assistant 2026.9 lub nowszy, HACS, konto Mój E.ON z danymi prosumenckimi i zwykła przeglądarka Google Chrome na komputerze.
 
-- Discovers active OZE supply points from the authenticated account.
-- Downloads hourly CSV reports once daily, in inclusive windows of at most 180 days.
-- Imports historical grid import/export into Recorder as external energy statistics.
-- Re-downloads the configured history window each day, so provider corrections update downstream cumulative sums without duplicating hours.
-- Exposes latest hourly import/export, latest interval start and excluded-value count sensors.
-- Renews the browser session every 10 minutes while loaded, persists rotated cookies and requests reauthentication if the session expires.
+Logujesz się swoim adresem e-mail i hasłem **bezpośrednio na stronie E.ON**. Rozszerzenie Chrome kopiuje kod aktywnej sesji, który wklejasz do Home Assistant. Nie potrzebujesz Pythona, HTTP Toolkit ani narzędzi deweloperskich strony.
 
-E.ON says reports update every two days. This is delayed historical energy, not live power. Export is not total PV production. The CSV import/export columns are used directly; monthly billing charts can differ because of hourly balancing and settlement rules.
+## 1. Zainstaluj integrację przez HACS
 
-## Install with HACS
+1. Otwórz **HACS** w Home Assistant.
+2. W menu z trzema kropkami wybierz **Repozytoria niestandardowe / Custom repositories**.
+3. Wklej adres:
+   ```text
+   https://github.com/tukies/home-assistant-eon-polska
+   ```
+4. Jako kategorię wybierz **Integracja / Integration** i dodaj repozytorium.
+5. Wyszukaj **E.ON Polska**, pobierz najnowszą wersję i **uruchom ponownie Home Assistant**.
 
-1. Open HACS → menu → **Custom repositories**.
-2. Add `https://github.com/tukies/home-assistant-eon-polska` and select **Integration**.
-3. Download E.ON Polska and restart Home Assistant.
-4. Add **E.ON Polska** under Settings → Devices & services, then follow the authentication steps below.
+To repozytorium niestandardowe HACS — integracja nie znajduje się na domyślnej liście sklepu.
 
-This repository is a HACS custom repository, not a default-store listing.
+<a id="browser-sign-in-recommended"></a>
+## 2. Dodaj rozszerzenie do Chrome
 
-## Manual installation and setup
+Rozszerzenie instalujesz **na swoim komputerze**, nie w Home Assistant.
 
-1. Copy `custom_components/eon_polska` into Home Assistant's `config/custom_components/` directory.
-2. Restart Home Assistant, then open **Settings → Devices & services → Add integration → E.ON Polska**.
-3. In a browser, sign in at https://eon.pl/mojeon. In Developer Tools → Network, inspect a successful `GetPHList` request. Copy its **Cookie** request-header value into the integration's password field. Use the same browser's User-Agent if different from the default.
-4. Select the prosumer supply point(s), a fixed history start date and whether to include estimates. The default start is approximately one month ago. A long history requires more downloads at startup and each daily refresh.
-5. In Energy settings, select the external **grid import** and **grid export** statistics for the supply point. Do not use the latest-hour sensors as accumulating energy meters.
+1. Pobierz [eon-browser-helper-0.2.0.zip](https://github.com/tukies/home-assistant-eon-polska/releases/download/v0.2.0/eon-browser-helper-0.2.0.zip).
+2. **Rozpakuj ZIP** do folderu, który zachowasz na komputerze.
+3. W swoim zwykłym Chrome otwórz `chrome://extensions`.
+4. W prawym górnym rogu włącz **Tryb dewelopera / Developer mode**.
+5. Kliknij **Załaduj rozpakowane / Load unpacked**.
+6. Wskaż rozpakowany folder zawierający plik `manifest.json`. Nie wybieraj samego ZIP-a ani pliku `manifest.json`.
+7. Na liście rozszerzeń pojawi się **E.ON Polska — logowanie do Home Assistant**. Opcjonalnie przypnij je do paska narzędzi przez ikonę puzzla.
 
-Requires Home Assistant 2026.9 or later for the tested Recorder API. Tested version: 2026.9.2, Python 3.14. Treat this as a local custom integration, not an official E.ON integration.
+Rozszerzenie jest udostępniane jako kod do lokalnego załadowania, a nie przez Chrome Web Store. Jego pliki znajdują się w katalogu [browser-helper](browser-helper/). Używaj zwykłego okna Chrome; tryb incognito wymaga osobnych uprawnień i nie jest zalecanym sposobem konfiguracji.
 
-## Authentication
+## 3. Zaloguj się i skopiuj kod sesji
 
-Password-only login is not implemented. The captured browser login contains a separate token and anti-forgery token; the integration does not try to bypass that flow. Session-cookie access and renewal were verified by direct Python requests. Long-running renewal across days, server restarts, or forced sign-outs has not been proven. Home Assistant being offline may require another browser login.
+1. Otwórz [Mój E.ON](https://eon.pl/mojeon) w tym samym Chrome, w którym dodano rozszerzenie.
+2. Zaloguj się swoim adresem e-mail i hasłem. Wykonaj ewentualne dodatkowe kroki wymagane przez stronę E.ON. Jeśli już jesteś zalogowany, nie musisz się wylogowywać.
+3. **Pozostaw kartę E.ON aktywną** i otwórz rozszerzenie z ikony puzzla na pasku Chrome.
+4. Kliknij **Kopiuj kod sesji**.
+5. Poczekaj na komunikat **„Skopiowano”**. Rozszerzenie najpierw sprawdza, czy E.ON potwierdza zalogowanie, a dopiero potem kopiuje kod.
 
-The Cookie header is a credential. Home Assistant stores it in its local config-entry storage and backups. The package contains no account credentials, private account identifiers or captured household data. The client sends credentials only to fixed E.ON HTTPS endpoints and does not follow redirects. Do not publish a config-entry export containing the cookie.
+**Kod sesji daje dostęp do konta.** Wklejaj go wyłącznie do swojej integracji w Home Assistant. Nie wysyłaj go w wiadomościach, zgłoszeniach GitHub ani na zrzutach ekranu. Kod jest zakodowany, a nie zaszyfrowany.
 
-A replacement session must have access to all configured supply points. The integration verifies this before accepting reauthentication. Standard electricity accounts (product type 100) are intentionally not offered: the verified hourly endpoint is for OZE accounts (type 300).
+## 4. Połącz konto z Home Assistant
 
-## Time and quality handling
+1. Otwórz **Ustawienia → Urządzenia i usługi → Dodaj integrację**.
+2. Wyszukaj **E.ON Polska**.
+3. Wybierz **Logowanie przez przeglądarkę (zalecane)**.
+4. Wklej skopiowany kod w pole **Kod sesji** i zatwierdź.
+5. Wybierz punkt poboru energii oraz datę początku historii.
+6. Zdecyduj, czy uwzględniać dane niepewne i prognozowane. Domyślnie uwzględniane są **tylko dane pewne**.
+7. Poczekaj na pierwsze pobranie danych. Dłuższa historia wymaga większej liczby raportów.
+8. Po wklejeniu usuń kod ze schowka, np. kopiując zwykły tekst. Rozszerzenie możesz usunąć po zakończeniu konfiguracji.
 
-CSV labels are interpreted as **hour-ending times in Europe/Warsaw**. `24:00` ends the final hour of the stated date. During spring DST, E.ON includes a zero-valued `02:00` placeholder with empty statuses; it is discarded. During autumn DST, E.ON appends `2A:00`, which is the second occurrence of 02:00. It is assigned to the correct UTC interval and sorted chronologically. Both conventions were exercised against live transition-day reports.
+Integracja nie przechowuje Twojego hasła. Home Assistant zapisuje dane sesji lokalnie w konfiguracji; mogą one również trafić do jego kopii zapasowych.
 
-Status definitions from E.ON's report guide:
+## 5. Dodaj dane do panelu Energia
 
-| Code | Meaning | Default import |
+Otwórz konfigurację panelu **Energia** i przypisz dwie historyczne serie dla wybranego punktu:
+
+| Seria | Zastosowanie |
+|---|---|
+| `… grid import` | Energia pobrana z sieci |
+| `… grid export` | Energia oddana do sieci |
+
+Identyfikatory statystyk mają postać `eon_polska:<PPE>_import` i `eon_polska:<PPE>_export`.
+
+**Nie wybieraj czujników „Latest hourly…” jako liczników energii.** Pokazują pojedynczy ostatni przedział. Historyczne serie są oddzielnie zapisywane w Recorderze z właściwymi datami.
+
+Oddawanie do sieci nie oznacza całkowitej produkcji fotowoltaiki — energia zużyta bezpośrednio w domu nie jest eksportem.
+
+## Aktualizacja z wersji 0.1.0
+
+Zaktualizuj integrację w HACS do **0.2.0** i uruchom ponownie Home Assistant. Istniejące wpisy, wybrane punkty i ustawienia historii pozostają bez zmian. Gdy Home Assistant poprosi o ponowne uwierzytelnienie, możesz użyć rozszerzenia i wkleić nowy kod. Nie musisz usuwać integracji.
+
+Jeśli rozszerzenie było już załadowane lokalnie, zastąp jego pliki nową wersją i kliknij **Odśwież / Reload** przy rozszerzeniu na stronie `chrome://extensions`.
+
+## Gdy sesja wygaśnie
+
+Integracja próbuje odnawiać sesję co 10 minut. Jeśli E.ON ją unieważni lub Home Assistant był dłużej wyłączony, może być potrzebne ponowne logowanie:
+
+1. Zaloguj się ponownie na stronie E.ON w zwykłym Chrome.
+2. Skopiuj nowy kod z rozszerzenia.
+3. W komunikacie o ponownym uwierzytelnieniu w Home Assistant wybierz **Logowanie przez przeglądarkę** i wklej kod.
+
+Nowa sesja musi mieć dostęp do wszystkich punktów przypisanych do integracji. Długotrwałe działanie odnowień przez wiele dni nie zostało jeszcze zweryfikowane.
+
+## Rozwiązywanie problemów
+
+| Problem | Co zrobić |
+|---|---|
+| Chrome nie pozwala załadować rozszerzenia | Rozpakuj ZIP. Wybierz folder, w którym bezpośrednio znajduje się `manifest.json`. |
+| Rozszerzenia nie widać na pasku | Otwórz menu puzzla i wybierz rozszerzenie E.ON. Możesz je przypiąć. |
+| „Otwórz zalogowaną kartę E.ON” | Przejdź do karty `https://eon.pl/mojeon`, a następnie ponownie otwórz rozszerzenie. |
+| E.ON nie potwierdza logowania | Zaloguj się na stronie, odśwież kartę i spróbuj ponownie. |
+| Błąd reCAPTCHA | Użyj zwykłego, aktualnego Chrome. Nie używaj okna uruchomionego przez narzędzie automatyzujące. Rozszerzenie nie omija reCAPTCHA. |
+| Nieprawidłowy lub wygasły kod | Skopiuj nowy kod z rozszerzenia. Wklej cały kod do pola w Home Assistant. |
+| Brak punktów do wyboru | Wersja 0.2.0 obsługuje aktywne punkty prosumenckie OZE. Zwykłe umowy bez OZE nie są obsługiwane przez zweryfikowany interfejs raportów. |
+| Brak części energii w statystykach | Sprawdź statusy danych i liczbę pominiętych wartości. Domyślnie prognozy i dane niepewne nie są sumowane. |
+| Dane nie są z dzisiaj | E.ON informuje o aktualizacji raportów co dwa dni. Integracja pobiera je raz dziennie. To historia energii, nie pomiar mocy na żywo. |
+
+## Dane, statusy i korekty
+
+Raporty są pobierane w zakresach do 180 dni. Integracja codziennie pobiera ponownie historię od wybranej daty, aby uwzględnić korekty E.ON bez podwójnego zliczania godzin.
+
+| Status E.ON | Znaczenie | Domyślne zachowanie |
 |---|---|---|
-| 0 | Confirmed | Included |
-| 1 | Uncertain | Excluded |
-| 2 | Missing | Excluded |
-| 3 | Forecast | Excluded |
-| Other / blank | Unknown | Excluded |
+| 0 | Dane pewne | Uwzględniane |
+| 1 | Dane niepewne | Pomijane |
+| 2 | Brak danych | Pomijane |
+| 3 | Dane prognozowane | Pomijane |
+| Inny lub pusty | Status nieznany | Pomijane |
 
-**Include uncertain and forecast readings** adds codes 1 and 3. Missing or unknown values are never counted. The cumulative statistics stay flat through excluded intervals; Energy totals therefore undercount where values are excluded. The excluded-value sensor and status-count attributes disclose this. They are counts across both directions for the whole configured history window. Later provider corrections are reconciled on the next successful complete refresh.
+Opcja uwzględniania danych niepewnych i prognozowanych dodaje statusy 1 i 3. Braki i statusy nieznane zawsze są pomijane. Suma pozostaje stała w pominiętych przedziałach, więc wynik może być zaniżony — nie oznacza to potwierdzonego zerowego zużycia. Czujnik pominiętych wartości i atrybuty jakości pokazują ten stan.
 
-Import/export interval sensors intentionally have no `state_class`: polling a past interval must not record that energy at today's polling time. Historical statistics use a zero baseline before the first interval so its energy is counted.
+Czasy są interpretowane w strefie **Europe/Warsaw** jako koniec godziny. Obsługiwane są `24:00`, wiosenny pusty przedział oraz dodatkowy jesienny przedział `2A:00`. Dane CSV mogą różnić się od miesięcznych wykresów rozliczeniowych wskutek bilansowania godzinowego i zasad rozliczeń.
 
-## Limits and recovery
+Początek historii i sposób traktowania prognoz są ustalane przy konfiguracji. Przy usuwaniu i ponownym dodawaniu integracji zachowaj te ustawienia albo usuń stare statystyki przed odbudową historii. Usunięcie wpisu integracji samo w sobie nie usuwa danych z Recordera.
 
-- The history start and estimate policy are fixed at setup. When recreating an entry, keep the same start and policy, or remove the old external statistics before rebuilding history; otherwise older rows outside the new range remain in Recorder.
-- The website API may change. Unexpected schemas, invalid numbers, conflicting duplicate hours and malformed DST rows are rejected.
-- Missing/unknown energy is excluded rather than treated as a confirmed zero. If all values for the latest interval are excluded, its energy sensors are unknown.
-- A network failure leaves the previous successful state available in memory but marks entities unavailable. A later successful refresh rebuilds history from E.ON.
-- Existing Recorder history is not deleted when an entry is removed.
-- The report form's current ItemId is discovered from the website rather than hardcoded.
+## Uprawnienia rozszerzenia
 
-## Development
+Rozszerzenie ma uprawnienia do ciasteczek `https://eon.pl/*`, wykonania sprawdzenia logowania na stronie E.ON oraz zapisu do schowka. Kod używa tych uprawnień wyłącznie do eksportu sesji na kliknięcie użytkownika.
+
+Nie odczytuje pól hasła, nie zbiera danych w tle, nie ma analityki, nie przechowuje sesji na stałe i nie wysyła kodu do serwera pośredniczącego. Przed skopiowaniem odrzuca ciasteczka śledzące, które nie są potrzebne do sesji.
+
+## Instalacja ręczna i tryb zaawansowany
+
+Bez HACS skopiuj katalog `custom_components/eon_polska` do katalogu `config/custom_components/` w Home Assistant i uruchom go ponownie.
+
+Zachowano opcję **Zaawansowane: nagłówek Cookie**. Jest przeznaczona dla osób, które świadomie kopiują nagłówek żądania z narzędzi deweloperskich. Do zwykłej konfiguracji użyj rozszerzenia opisanego powyżej.
+
+## Dla programistów
 
 ```sh
 uv venv --python 3.14 .venv
 uv pip install --python .venv/bin/python homeassistant==2026.9.2 pytest pytest-asyncio ruff
 .venv/bin/python -m pytest tests -q
 .venv/bin/ruff check .
+node --test tests/test_extension.mjs
 ```
 
-See [VERIFICATION.md](VERIFICATION.md) for the evidence and remaining validation boundaries.
+Testy rozszerzenia wymagają Node.js 18 lub nowszego. Szczegóły walidacji: [VERIFICATION.md](VERIFICATION.md).
 
-## Sources
+## Źródła
 
-- [E.ON report guide](https://eon.pl/-/media/Files/Instrukcje/Ulotka_do_raportu_danych_pomiarowych): hourly data, source, two-day update cadence and quality legend.
-- [Home Assistant Recorder API changes](https://developers.home-assistant.io/blog/2025/10/16/recorder-statistics-api-changes/): `mean_type` and `unit_class` metadata.
-- [Home Assistant statistics](https://data.home-assistant.io/docs/statistics/): external historical statistics.
+- [Instrukcja raportu pomiarowego E.ON](https://eon.pl/-/media/Files/Instrukcje/Ulotka_do_raportu_danych_pomiarowych)
+- [Zmiany API statystyk Home Assistant](https://developers.home-assistant.io/blog/2025/10/16/recorder-statistics-api-changes/)
+- [Statystyki historyczne Home Assistant](https://data.home-assistant.io/docs/statistics/)
+
+Integracja nie jest oficjalnym produktem E.ON. Kod udostępniono na [licencji MIT](LICENSE).

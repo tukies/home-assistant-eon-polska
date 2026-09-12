@@ -48,7 +48,7 @@ class EonClient:
             if re.fullmatch(r"[!#$%&\'*+.^_`|~0-9a-zA-Z-]+", name) and not any(
                 c in value for c in "\r\n"
             ):
-                self.cookies[name] = value
+                self.cookies.setdefault(name, value)
         if not self.cookies.get(".AspNet.Cookies"):
             raise AuthError("Missing E.ON authentication cookie")
 

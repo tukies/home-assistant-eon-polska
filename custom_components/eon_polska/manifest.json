@@ -1,7 +1,7 @@
 {
   "domain": "eon_polska",
   "name": "E.ON Polska",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "config_flow": true,
   "documentation": "https://github.com/tukies/home-assistant-eon-polska",
   "dependencies": [

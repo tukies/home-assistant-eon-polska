@@ -1,0 +1,71 @@
+{
+  "title": "E.ON Polska",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Połącz konto E.ON Polska",
+        "menu_options": {
+          "browser": "Logowanie przez przeglądarkę (zalecane)",
+          "cookie": "Zaawansowane: nagłówek Cookie"
+        }
+      },
+      "browser": {
+        "title": "Logowanie przez przeglądarkę",
+        "description": "Zainstaluj [rozszerzenie do Chrome](https://github.com/tukies/home-assistant-eon-polska#browser-sign-in-recommended). Zaloguj się na stronie E.ON w zwykłej przeglądarce. Na aktywnej karcie E.ON otwórz rozszerzenie, kliknij „Kopiuj kod sesji” i wklej kod poniżej. Kod jest poufny — nie udostępniaj go innym osobom.",
+        "data": {
+          "session_code": "Kod sesji"
+        }
+      },
+      "cookie": {
+        "title": "Zaawansowane: nagłówek Cookie",
+        "description": "Zaloguj się na eon.pl/mojeon. W narzędziach deweloperskich przeglądarki skopiuj nagłówek Cookie poprawnego żądania GetPHList. Dane sesji zostaną zapisane lokalnie w Home Assistant. Do zwykłej konfiguracji zalecamy rozszerzenie Chrome.",
+        "data": {
+          "cookie": "Nagłówek Cookie",
+          "user_agent": "User-Agent przeglądarki"
+        }
+      },
+      "select": {
+        "title": "Wybierz punkty prosumenckie",
+        "description": "Historia będzie pobierana codziennie od wskazanej daty. Domyślnie sumowane są tylko dane pewne. Możesz uwzględnić również dane niepewne i prognozowane; braki zawsze są pomijane.",
+        "data": {
+          "ppes": "Punkty poboru energii (PPE)",
+          "start_date": "Początek historii",
+          "include_estimates": "Uwzględniaj dane niepewne i prognozowane"
+        }
+      },
+      "reauth": {
+        "title": "Odnów logowanie do E.ON",
+        "menu_options": {
+          "reauth_browser": "Logowanie przez przeglądarkę (zalecane)",
+          "reauth_confirm": "Zaawansowane: nagłówek Cookie"
+        }
+      },
+      "reauth_browser": {
+        "title": "Odnów logowanie przez przeglądarkę",
+        "description": "Zainstaluj [rozszerzenie do Chrome](https://github.com/tukies/home-assistant-eon-polska#browser-sign-in-recommended). Zaloguj się na stronie E.ON w zwykłej przeglądarce. Na aktywnej karcie E.ON otwórz rozszerzenie, kliknij „Kopiuj kod sesji” i wklej kod poniżej. Kod jest poufny — nie udostępniaj go innym osobom.",
+        "data": {
+          "session_code": "Kod sesji"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Odnów sesję E.ON",
+        "description": "Zaloguj się ponownie w przeglądarce i wklej nowy nagłówek Cookie dla tego samego konta.",
+        "data": {
+          "cookie": "Nagłówek Cookie"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Sesja jest nieprawidłowa lub wygasła. Zaloguj się ponownie i skopiuj nowy kod.",
+      "cannot_connect": "Nie można połączyć się z E.ON. Spróbuj ponownie później.",
+      "wrong_account": "Ta sesja nie ma dostępu do wszystkich skonfigurowanych punktów PPE.",
+      "invalid_selection": "Wybierz dostępne punkty PPE i datę od 2022 roku do przedwczoraj.",
+      "invalid_session_code": "Nieprawidłowy kod sesji. Na aktywnej karcie E.ON otwórz rozszerzenie, kliknij „Kopiuj kod sesji” i wklej cały kod."
+    },
+    "abort": {
+      "no_oze_accounts": "Nie znaleziono aktywnych punktów prosumenckich OZE. Zwykłe umowy bez OZE nie są obsługiwane.",
+      "already_configured": "Co najmniej jeden z wybranych punktów jest już skonfigurowany.",
+      "reauth_successful": "Sesja została odnowiona."
+    }
+  }
+}

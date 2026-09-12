@@ -12,3 +12,6 @@ __pycache__/
 *session*.json
 *auth*.json
 work/
+.browser-venv/
+*.eon-session
+session-code*

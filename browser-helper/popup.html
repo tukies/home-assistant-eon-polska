@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Logowanie E.ON</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <h1>Logowanie E.ON</h1>
+  <p>Zaloguj się adresem e-mail i hasłem na stronie E.ON. Następnie otwórz to rozszerzenie na aktywnej karcie E.ON i skopiuj kod sesji.</p>
+  <a href="https://eon.pl/mojeon/Logowanie" target="_blank" rel="noopener noreferrer">Otwórz logowanie E.ON</a>
+  <button id="copy" type="button">Kopiuj kod sesji</button>
+  <p id="status" role="status" aria-live="polite"></p>
+  <p class="note">Wklej kod w Home Assistant: E.ON Polska → Logowanie przez przeglądarkę. Chroń go tak jak hasło. Po wklejeniu wyczyść schowek.</p>
+  <p class="note">Rozszerzenie nie odczytuje haseł ani nie wysyła kodu na serwer. Możesz je usunąć po konfiguracji.</p>
+  <script type="module" src="popup.mjs"></script>
+</body>
+</html>

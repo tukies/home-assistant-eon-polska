@@ -97,3 +97,8 @@ async def test_error_does_not_expose_session():
     with pytest.raises(ApiError) as err:
         await client.renew()
     assert "secret" not in str(err.value)
+
+
+def test_first_cookie_has_browser_path_priority():
+    client = EonClient(Session(), ".AspNet.Cookies=specific; .AspNet.Cookies=general")
+    assert client.cookies[".AspNet.Cookies"] == "specific"
