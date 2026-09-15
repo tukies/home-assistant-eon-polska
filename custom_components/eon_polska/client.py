@@ -109,17 +109,27 @@ class EonClient:
                         )
         return points
 
-    async def renew(self):
+    async def _session_status(self, endpoint, params=None):
         try:
-            data = json.loads(
-                await self.request(
-                    "/mojeon/api/resetauthorizationcookie", {"path": REFERER}
-                )
-            )
+            data = json.loads(await self.request(endpoint, params))
         except ValueError as err:
-            raise AuthError("Invalid renewal response") from err
-        if data.get("Status") != 200:
-            raise AuthError("Session renewal failed")
+            raise ApiError("Invalid session-service response") from err
+        if not isinstance(data, dict):
+            raise ApiError("Invalid session-service response")
+        status = data.get("Status")
+        if status in (401, 403, 404):
+            raise AuthError("E.ON session expired")
+        if status != 200:
+            raise ApiError("Session service temporarily unavailable")
+        return data
+
+    async def renew(self):
+        data = await self._session_status(
+            "/mojeon/api/resetauthorizationcookie", {"path": REFERER}
+        )
+        # Reset alone does not exercise the website's inactivity keepalive path.
+        await self._session_status("/mojeon/api/keepalive")
+        await self._session_status("/mojeon/api/getuserstatus")
         return data
 
     async def report_form(self):

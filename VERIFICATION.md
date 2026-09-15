@@ -1,3 +1,11 @@
+## Podtrzymywanie sesji — 0.3.1, 15 września 2026
+
+- Kod strony E.ON wywołuje `resetauthorizationcookie`, okresowo sprawdza `getuserstatus` i używa `keepalive` do podtrzymywania aktywności.
+- Na świeżej sesji wszystkie trzy endpointy zwróciły status aplikacyjny 200; po wykonaniu nowej sekwencji klient nadal odczytywał konto.
+- Oddzielne próby `keepalive` i `getuserstatus` nie wykazały rotacji ciasteczek. Nie jest to dowód przedłużenia maksymalnego czasu ważności sesji.
+- Dodano testy sekwencji, odmowy uwierzytelnienia i odróżniania awarii usługi od wygaśnięcia sesji.
+- Nie wykonano testu trwającego ponad trzy dni ani zmian w Home Assistant rodziców użytkownika.
+
 # Walidacja — 12 września 2026
 
 ## Rozszerzenie danych — wersja 0.3.0

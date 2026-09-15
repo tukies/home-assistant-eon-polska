@@ -84,7 +84,10 @@ async def test_rotated_cookie_used_on_next_call():
 
     c = SimpleCookie()
     c[".AspNet.Cookies"] = "rotated"
-    session = Session(Response('{"Status":200}', cookies=c), Response('{"Status":200}'))
+    session = Session(
+        Response('{"Status":200}', cookies=c),
+        *[Response('{"Status":200}') for _ in range(5)],
+    )
     client = EonClient(session, ".AspNet.Cookies=old")
     await client.renew()
     await client.renew()
@@ -102,3 +105,31 @@ async def test_error_does_not_expose_session():
 def test_first_cookie_has_browser_path_priority():
     client = EonClient(Session(), ".AspNet.Cookies=specific; .AspNet.Cookies=general")
     assert client.cookies[".AspNet.Cookies"] == "specific"
+
+
+@pytest.mark.asyncio
+async def test_renew_exercises_keepalive_and_checks_auth_status():
+    session = Session(*[Response('{"Status":200}') for _ in range(3)])
+    await EonClient(session, ".AspNet.Cookies=synthetic").renew()
+    assert [call[0].rsplit("/", 1)[-1] for call in session.calls] == [
+        "resetauthorizationcookie",
+        "keepalive",
+        "getuserstatus",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_keepalive_expiry_is_not_reported_as_success():
+    session = Session(Response('{"Status":200}'), Response('{"Status":401}'))
+    with pytest.raises(AuthError):
+        await EonClient(session, ".AspNet.Cookies=synthetic").renew()
+    assert len(session.calls) == 2
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "body", ["<html>service unavailable</html>", '{"Status":500}', "null", "{}"]
+)
+async def test_bad_renewal_service_response_is_not_invalid_credentials(body):
+    with pytest.raises(ApiError):
+        await EonClient(Session(Response(body)), ".AspNet.Cookies=synthetic").renew()

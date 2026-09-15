@@ -101,13 +101,13 @@ Jeśli rozszerzenie było już załadowane lokalnie, zastąp jego pliki nową we
 
 ## Gdy sesja wygaśnie
 
-Integracja próbuje odnawiać sesję co 10 minut. Jeśli E.ON ją unieważni lub Home Assistant był dłużej wyłączony, może być potrzebne ponowne logowanie:
+Od wersji 0.3.1 integracja co 10 minut wywołuje kolejno `resetauthorizationcookie`, `keepalive` i `getuserstatus`. Wcześniej wywoływała tylko pierwszy endpoint. Jeśli E.ON ją unieważni lub Home Assistant był dłużej wyłączony, może być potrzebne ponowne logowanie:
 
 1. Zaloguj się ponownie na stronie E.ON w zwykłym Chrome.
 2. Skopiuj nowy kod z rozszerzenia.
 3. W komunikacie o ponownym uwierzytelnieniu w Home Assistant wybierz **Logowanie przez przeglądarkę** i wklej kod.
 
-Nowa sesja musi mieć dostęp do wszystkich punktów przypisanych do integracji. Długotrwałe działanie odnowień przez wiele dni nie zostało jeszcze zweryfikowane.
+Nowa sesja musi mieć dostęp do wszystkich punktów przypisanych do integracji. Sprawdzono poprawną odpowiedź całej sekwencji i dostęp do konta po jej wykonaniu. Nie potwierdzono jeszcze działania przez ponad trzy dni. E.ON może narzucać maksymalny czas sesji niezależny od podtrzymywania; w takim przypadku potrzebne będzie ponowne logowanie. Wygaśniętej sesji sama aktualizacja nie przywróci.
 
 ## Rozwiązywanie problemów
 
