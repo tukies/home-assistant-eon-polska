@@ -1,3 +1,13 @@
+## Odnawianie sesji i diagnostyka — 0.3.2, 12 października 2026
+
+- Porównano aktualny publiczny formularz logowania i moduł `check-user-status.js` w pakiecie JavaScript E.ON. Moduł używa `Interval` dla sprawdzania statusu i `ResetInterval` dla podtrzymywania aktywności; obie wartości są wyrażone w sekundach.
+- Integracja używa dwóch niezależnych timerów. Nowe interwały z codziennego odnowienia zastępują oczekujące wywołania. Nieprawidłowe wartości wracają do 600 sekund, a przejściowe błędy sieci/usługi powodują ponowienie po maksymalnie 60 sekundach.
+- Testy sprawdzają zapis ciasteczka przed późniejszą awarią, przed błędem odczytu treści odpowiedzi oraz usunięcie ciasteczka przy HTTP 401. Test konfiguracji sprawdza podłączenie zapisu przed pierwszym odświeżeniem, zachowanie pozostałych ustawień oraz zamknięcie klienta przy nieudanej konfiguracji.
+- Testy harmonogramów obejmują niezależne interwały, zmianę interwałów, ignorowanie anulowanych callbacków, przejściowe awarie i powrót do zwykłego harmonogramu, zatrzymanie obu timerów przy odmowie logowania i wyładowanie integracji.
+- Przeszło 87 testów Python (w tym rzeczywisty Recorder z tymczasową bazą SQLite) oraz 8 testów rozszerzenia. Ruff i kontrola białych znaków nie zgłosiły błędów. Pozostały ostrzeżenia o przestarzałych API bibliotek zależnych.
+- Dodano pobieranie diagnostyki w Home Assistant z jawnie wybranymi metadanymi. Testy sprawdzają brak sekretów sesji, User-Agent, PPE i treści odpowiedzi; historię ostatnich 20 błędów; liczniki błędów oraz osobne liczenie rotacji i usunięcia ciasteczka uwierzytelniającego.
+- Walidacja jest lokalna na Pythonie 3.14 / Home Assistant 2026.9.2. Nie zmieniono produkcyjnego Home Assistant, nie wykonano uwierzytelnionych żądań do E.ON ani wielodniowego testu żywotności nowych harmonogramów. Nie potwierdzono przyczyny zgłaszanego wygasania po około pięciu dniach.
+
 ## Podtrzymywanie sesji — 0.3.1, 15 września 2026
 
 - Kod strony E.ON wywołuje `resetauthorizationcookie`, okresowo sprawdza `getuserstatus` i używa `keepalive` do podtrzymywania aktywności.

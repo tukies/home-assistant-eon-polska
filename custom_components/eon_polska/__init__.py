@@ -1,17 +1,12 @@
 """E.ON Polska hourly energy integration."""
 
-import logging
-from datetime import timedelta
-
 import aiohttp
 from homeassistant.const import Platform
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.event import async_track_time_interval
 
-from .client import ApiError, AuthError, EonClient
+from .client import AuthError, EonClient
 from .coordinator import EonCoordinator
-
-_LOGGER = logging.getLogger(__name__)
+from .renewal import SessionRenewal
 
 
 async def async_setup_entry(hass, entry):
@@ -19,6 +14,9 @@ async def async_setup_entry(hass, entry):
     try:
         client = EonClient(session, entry.data["cookie"], entry.data["user_agent"])
         coordinator = EonCoordinator(hass, entry, client)
+        client.on_cookie_change = coordinator.save_cookie
+        coordinator.renewal = SessionRenewal(hass, entry, coordinator)
+        client.on_timing_change = coordinator.renewal.timings_changed
         await coordinator.async_config_entry_first_refresh()
         entry.runtime_data = coordinator
         await hass.config_entries.async_forward_entry_setups(entry, [Platform.SENSOR])
@@ -29,25 +27,14 @@ async def async_setup_entry(hass, entry):
         await session.close()
         raise
 
-    async def renew(_now):
-        try:
-            async with coordinator.lock:
-                await client.renew()
-                coordinator.save_cookie()
-        except AuthError:
-            coordinator.async_set_update_error(
-                ConfigEntryAuthFailed("E.ON session expired")
-            )
-            entry.async_start_reauth(hass)
-        except ApiError:
-            _LOGGER.debug("E.ON session renewal temporarily unavailable")
-
-    entry.async_on_unload(async_track_time_interval(hass, renew, timedelta(minutes=10)))
+    coordinator.renewal.start()
+    entry.async_on_unload(coordinator.renewal.stop)
     return True
 
 
 async def async_unload_entry(hass, entry):
     if await hass.config_entries.async_unload_platforms(entry, [Platform.SENSOR]):
+        entry.runtime_data.renewal.stop()
         await entry.runtime_data.client.session.close()
         return True
     return False

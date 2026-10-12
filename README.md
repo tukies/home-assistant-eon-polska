@@ -93,21 +93,31 @@ Identyfikatory statystyk mają postać `eon_polska:<PPE>_import` i `eon_polska:<
 
 Oddawanie do sieci nie oznacza całkowitej produkcji fotowoltaiki — energia zużyta bezpośrednio w domu nie jest eksportem.
 
-## Aktualizacja do wersji 0.3.0
+## Aktualizacja do wersji 0.3.2
 
-Zaktualizuj integrację w HACS do **0.3.0** i uruchom ponownie Home Assistant. Istniejące wpisy, wybrane punkty i ustawienia historii pozostają bez zmian. Nowe czujniki zostaną dodane automatycznie. Rozszerzenie Chrome w wersji 0.2.0 nadal jest zgodne i nie wymaga aktualizacji. Gdy Home Assistant poprosi o ponowne uwierzytelnienie, możesz użyć rozszerzenia i wkleić nowy kod. Nie musisz usuwać integracji.
+Zaktualizuj integrację w HACS do **0.3.2** i uruchom ponownie Home Assistant. Istniejące wpisy, wybrane punkty i ustawienia historii pozostają bez zmian. Wersja 0.3.2 poprawia podtrzymywanie sesji i dodaje pobieranie diagnostyki. Przy aktualizacji z wersji wcześniejszej niż 0.3.0 czujniki podsumowań zostaną dodane automatycznie. Rozszerzenie Chrome w wersji 0.2.0 nadal jest zgodne i nie wymaga aktualizacji. Gdy Home Assistant poprosi o ponowne uwierzytelnienie, możesz użyć rozszerzenia i wkleić nowy kod. Nie musisz usuwać integracji.
 
 Jeśli rozszerzenie było już załadowane lokalnie, zastąp jego pliki nową wersją i kliknij **Odśwież / Reload** przy rozszerzeniu na stronie `chrome://extensions`.
 
 ## Gdy sesja wygaśnie
 
-Od wersji 0.3.1 integracja co 10 minut wywołuje kolejno `resetauthorizationcookie`, `keepalive` i `getuserstatus`. Wcześniej wywoływała tylko pierwszy endpoint. Jeśli E.ON ją unieważni lub Home Assistant był dłużej wyłączony, może być potrzebne ponowne logowanie:
+Od wersji 0.3.2 integracja odczytuje z `resetauthorizationcookie` czasy `Interval` i `ResetInterval` (w sekundach). Osobno sprawdza `getuserstatus` według `Interval` i wysyła `keepalive` według `ResetInterval`. Czasy są odczytywane przy pierwszym pobraniu danych i ponownie przy codziennej aktualizacji. Dla brakujących lub nieprawidłowych czasów używa 10 minut; akceptuje całkowite wartości od 1 sekundy do 24 godzin. Po błędzie sieci lub usługi ponawia daną operację po maksymalnie 60 sekundach, bez uruchamiania ponownego logowania. Poprzednia wersja 0.3.1 wywoływała wszystkie trzy endpointy co 10 minut.
+
+Zmiany ciasteczek są zapisywane do konfiguracji Home Assistant natychmiast po otrzymaniu odpowiedzi, również gdy odczyt jej treści lub kolejne żądanie zakończy się błędem. Jeśli E.ON unieważni sesję lub Home Assistant był dłużej wyłączony, może być potrzebne ponowne logowanie:
 
 1. Zaloguj się ponownie na stronie E.ON w zwykłym Chrome.
 2. Skopiuj nowy kod z rozszerzenia.
 3. W komunikacie o ponownym uwierzytelnieniu w Home Assistant wybierz **Logowanie przez przeglądarkę** i wklej kod.
 
-Nowa sesja musi mieć dostęp do wszystkich punktów przypisanych do integracji. Sprawdzono poprawną odpowiedź całej sekwencji i dostęp do konta po jej wykonaniu. Nie potwierdzono jeszcze działania przez ponad trzy dni. E.ON może narzucać maksymalny czas sesji niezależny od podtrzymywania; w takim przypadku potrzebne będzie ponowne logowanie. Wygaśniętej sesji sama aktualizacja nie przywróci.
+Nowa sesja musi mieć dostęp do wszystkich punktów przypisanych do integracji. Wcześniej sprawdzono poprawną odpowiedź całej sekwencji i dostęp do konta po jej wykonaniu. Nie potwierdzono jeszcze wielodniowego działania nowych harmonogramów. E.ON może narzucać maksymalny czas sesji niezależny od podtrzymywania; w takim przypadku potrzebne będzie ponowne logowanie. Wygaśniętej sesji sama aktualizacja nie przywróci.
+
+### Diagnostyka wygasania sesji
+
+W menu wpisu integracji w **Ustawienia → Urządzenia i usługi → E.ON Polska** wybierz **Pobierz diagnostykę / Download diagnostics**. Po wygaśnięciu sesji pobierz plik przed restartem lub ponownym uwierzytelnieniem.
+
+Diagnostyka zawiera czas uruchomienia klienta, liczbę żądań i zmian ciasteczek, czas ostatniej zmiany i usunięcia ciasteczka uwierzytelniającego, ostatniego błędu oraz udanych operacji podtrzymania, otrzymane interwały i stan obu harmonogramów. Zawiera również liczniki błędów według kategorii oraz ostatnie 20 błędów. Błąd obejmuje nazwę endpointu, kategorię oraz status HTTP lub rozpoznany status aplikacyjny. Daty są zapisane w UTC. `last_http_success_at` oznacza odczyt odpowiedzi HTTP 200, a nie potwierdzenie ważności sesji; powodzenie podtrzymywania pokazują oddzielne timery.
+
+Plik nie zawiera ciasteczek, kodów sesji, treści odpowiedzi, danych konta, punktów PPE ani raportów energii. Dane diagnostyczne są przechowywane w pamięci i zerują się po przeładowaniu integracji lub restarcie. Nie pozwalają ustalić pierwotnego wieku sesji skopiowanej z przeglądarki ani same w sobie udowodnić maksymalnego czasu jej ważności. Przy odmowie uwierzytelnienia timery zatrzymują się, integracja prosi o ponowne logowanie, a dziennik zapisuje ostrzeżenie bez danych sesji.
 
 ## Rozwiązywanie problemów
 
