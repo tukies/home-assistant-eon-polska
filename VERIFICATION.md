@@ -1,3 +1,11 @@
+## Ponawianie pobierania danych — 0.3.3, 14 października 2026
+
+- Nieudane pobieranie wymaganych danych zmienia harmonogram aktualizacji na 5, 10, 20 i maksymalnie 30 minut. Po odzyskaniu danych harmonogram wraca do 24 godzin, a kolejna awaria zaczyna ponownie od 5 minut.
+- Testy używają rzeczywistego cyklu odświeżania i harmonogramu `DataUpdateCoordinator`. Obejmują awarie odkrywania kont, pobierania raportu oraz końcowego odnawiania sesji; brak zapisu statystyk przy nieudanym pobraniu; przywrócenie dostępności czujników po odzyskaniu danych; zatrzymanie ponowień i uruchomienie ponownego uwierzytelnienia przy błędach autoryzacji, również w opcjonalnym źródle.
+- Zmiana nie wyzwala pobierania energii z timerów podtrzymujących sesję i nie zmienia polityki jakości danych. Początkowe niepowodzenie konfiguracji nadal podlega mechanizmowi ponowień konfiguracji Home Assistant.
+- Walidacja lokalna: 93 testy Python na Home Assistant 2026.9.2, 8 testów rozszerzenia, Ruff i kontrola białych znaków przeszły pomyślnie. Pozostały ostrzeżenia o przestarzałych API bibliotek zależnych.
+- Nie wdrożono tej poprawki do produkcyjnego Home Assistant ani nie zasymulowano w nim awarii sieci.
+
 ## Odnawianie sesji i diagnostyka — 0.3.2, 12 października 2026
 
 - Porównano aktualny publiczny formularz logowania i moduł `check-user-status.js` w pakiecie JavaScript E.ON. Moduł używa `Interval` dla sprawdzania statusu i `ResetInterval` dla podtrzymywania aktywności; obie wartości są wyrażone w sekundach.

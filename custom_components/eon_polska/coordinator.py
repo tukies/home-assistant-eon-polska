@@ -22,6 +22,8 @@ from .parser import (
 from .summaries import SummaryError, billing_summary, hourly_summary, monthly_summary
 
 _LOGGER = logging.getLogger(__name__)
+DATA_UPDATE_INTERVAL = timedelta(hours=24)
+DATA_RETRY_INTERVALS = tuple(timedelta(minutes=m) for m in (5, 10, 20, 30))
 
 
 class EonCoordinator(DataUpdateCoordinator):
@@ -31,10 +33,11 @@ class EonCoordinator(DataUpdateCoordinator):
             _LOGGER,
             name=DOMAIN,
             config_entry=entry,
-            update_interval=timedelta(hours=24),
+            update_interval=DATA_UPDATE_INTERVAL,
         )
         self.entry, self.client = entry, client
         self.lock = asyncio.Lock()
+        self._data_refresh_failures = 0
 
     def save_cookie(self):
         if self.client.cookie != self.entry.data["cookie"]:
@@ -123,8 +126,24 @@ class EonCoordinator(DataUpdateCoordinator):
                                 self.entry.data["include_estimates"],
                             ),
                         )
+                self._data_refresh_failures = 0
                 return data
             except AuthError as err:
+                # HA stops polling and starts reauthentication for this error.
+                self._data_refresh_failures = 0
                 raise ConfigEntryAuthFailed(str(err)) from err
             except (ApiError, ReportError, ValueError) as err:
-                raise UpdateFailed(str(err)) from err
+                self._data_refresh_failures += 1
+                retry_interval = DATA_RETRY_INTERVALS[
+                    min(self._data_refresh_failures, len(DATA_RETRY_INTERVALS)) - 1
+                ]
+                _LOGGER.debug(
+                    "E.ON data refresh failed; retry in %s (consecutive failures: %s)",
+                    retry_interval,
+                    self._data_refresh_failures,
+                )
+                # HA schedules this one retry instead of the normal daily poll.
+                # A successful fetch automatically resumes the daily schedule.
+                raise UpdateFailed(
+                    str(err), retry_after=retry_interval.total_seconds()
+                ) from err

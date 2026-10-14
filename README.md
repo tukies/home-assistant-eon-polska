@@ -93,9 +93,9 @@ Identyfikatory statystyk mają postać `eon_polska:<PPE>_import` i `eon_polska:<
 
 Oddawanie do sieci nie oznacza całkowitej produkcji fotowoltaiki — energia zużyta bezpośrednio w domu nie jest eksportem.
 
-## Aktualizacja do wersji 0.3.2
+## Aktualizacja do wersji 0.3.3
 
-Zaktualizuj integrację w HACS do **0.3.2** i uruchom ponownie Home Assistant. Istniejące wpisy, wybrane punkty i ustawienia historii pozostają bez zmian. Wersja 0.3.2 poprawia podtrzymywanie sesji i dodaje pobieranie diagnostyki. Przy aktualizacji z wersji wcześniejszej niż 0.3.0 czujniki podsumowań zostaną dodane automatycznie. Rozszerzenie Chrome w wersji 0.2.0 nadal jest zgodne i nie wymaga aktualizacji. Gdy Home Assistant poprosi o ponowne uwierzytelnienie, możesz użyć rozszerzenia i wkleić nowy kod. Nie musisz usuwać integracji.
+Zaktualizuj integrację w HACS do **0.3.3** i uruchom ponownie Home Assistant. Istniejące wpisy, wybrane punkty i ustawienia historii pozostają bez zmian. Wersja 0.3.3 dodaje automatyczne ponawianie pobierania danych po przejściowych awariach, aby czujniki odzyskiwały dostępność bez czekania do następnego dnia. Zachowuje podtrzymywanie sesji i diagnostykę z wersji 0.3.2. Przy aktualizacji z wersji wcześniejszej niż 0.3.0 czujniki podsumowań zostaną dodane automatycznie. Rozszerzenie Chrome w wersji 0.2.0 nadal jest zgodne i nie wymaga aktualizacji. Gdy Home Assistant poprosi o ponowne uwierzytelnienie, możesz użyć rozszerzenia i wkleić nowy kod. Nie musisz usuwać integracji.
 
 Jeśli rozszerzenie było już załadowane lokalnie, zastąp jego pliki nową wersją i kliknij **Odśwież / Reload** przy rozszerzeniu na stronie `chrome://extensions`.
 
@@ -136,6 +136,8 @@ Plik nie zawiera ciasteczek, kodów sesji, treści odpowiedzi, danych konta, pun
 ## Dane, statusy i korekty
 
 Raporty są pobierane w zakresach do 180 dni. Integracja codziennie pobiera ponownie historię od wybranej daty, aby uwzględnić korekty E.ON bez podwójnego zliczania godzin.
+
+Po nieudanym pobraniu danych integracja ponawia aktualizację po 5 minutach. Kolejne niepowodzenia wydłużają odstęp do 10, 20 i maksymalnie 30 minut. Po udanej aktualizacji wraca do pobierania raz na dobę. Do czasu odzyskania danych czujniki pozostają niedostępne. Wygaśnięcie sesji uruchamia ponowne uwierzytelnienie zamiast tej pętli ponowień. Niezależne podtrzymywanie sesji nadal działa według interwałów E.ON.
 
 | Status E.ON | Znaczenie | Domyślne zachowanie |
 |---|---|---|
